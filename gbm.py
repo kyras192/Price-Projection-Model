@@ -31,4 +31,11 @@ def simulate_gbm_paths(S0, mu_annual, cov_annual, years=30, steps_per_year=252, 
     drift = mu - (np.diag(cov)/2) # drift term in the exponential in the formula
 
     for t in range(1, n_steps + 1):
-        
+        Z = np.random.normal(size=(n_assets, n_paths)) # samples from independant standard normal with shape (nassets, npaths)
+        correlated_Z = L @ Z # L is 2x2 and Z is 2 x npaths so it's always multiplicable 
+    
+        increments = (drift[:,None] * dt) + correlated_Z
+        paths[t] = paths[t-1] * np.exp(increments) # gbm formula
+
+    return paths
+
