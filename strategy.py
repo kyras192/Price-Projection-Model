@@ -18,14 +18,21 @@ def compute_risk_metrics(portfolio_value_over_time, es_quantile=5):
     daily_returns = portfolio_value_over_time[1:] / portfolio_value_over_time[:-1] - 1
     volatility = np.std(daily_returns)
 
-    return
+    # calculating expected shortfall
+    peak_values_over_time = np.maximum.accumulate(portfolio_value_over_time, axis=0)
+    drawdowns = (peak_values_over_time - portfolio_value_over_time) / peak_values_over_time
+    max_drawdowns = np.max(drawdowns, axis=0) # max drawdowns for each path
+
+    cutoff = np.percentile(max_drawdowns, 100 - es_quantile)
+    expected_shortfall = max_drawdowns[max_drawdowns >= cutoff].mean()
+    return volatility, expected_shortfall
 
 
 
 '''
 Alternating IVV and QQQ day by day
 '''
-def daily_half_strat(n_paths=1000):
+def daily_half_strat(n_paths=5000):
     years = 30
     steps = years * 252
     ivv_shares = np.zeros(n_paths) #arrays for how many ivv and qqq shares in each run
@@ -52,13 +59,13 @@ def daily_half_strat(n_paths=1000):
     #plt.plot(portfolio_value_over_time[:,:], alpha=0.15)
     #plt.show()
     median_path = np.median(portfolio_value_over_time, axis=1)
-
-    return median_path
+    volatility, expected_shortfall = compute_risk_metrics(portfolio_value_over_time, 5)
+    return median_path, volatility, expected_shortfall
 
 '''
 buying only IVV
 '''
-def buyIVV(n_paths=1000):
+def buyIVV(n_paths=5000):
     years = 30
     steps = years*252
     ivv_shares = np.zeros(n_paths)
@@ -76,13 +83,13 @@ def buyIVV(n_paths=1000):
     #plt.plot(portfolio_value_over_time[:,:], alpha=0.15)
     #plt.show()
     median_path = np.median(portfolio_value_over_time, axis=1)
-
-    return median_path
+    volatility, expected_shortfall = compute_risk_metrics(portfolio_value_over_time, 5)
+    return median_path, volatility, expected_shortfall
 
 '''
 buy only qqq
 '''
-def buyQQQ(n_paths=1000):
+def buyQQQ(n_paths=5000):
     years = 30
     steps = years*252
     qqq_shares = np.zeros(n_paths)
@@ -101,14 +108,14 @@ def buyQQQ(n_paths=1000):
     #plt.show()
 
     median_path = np.median(portfolio_value_over_time, axis=1)
-
-    return median_path
+    volatility, expected_shortfall = compute_risk_metrics(portfolio_value_over_time, 5)
+    return median_path, volatility, expected_shortfall
 
 
 '''
 buying qqq only in bear markets
 '''
-def bear_buying(n_paths=1000):
+def bear_buying(n_paths=5000):
     years = 30
     steps = years*252
     ivv_shares = np.zeros(n_paths)
@@ -139,7 +146,8 @@ def bear_buying(n_paths=1000):
     #plt.plot(portfolio_value_over_time[:,:], alpha=0.15)
     #plt.show()
     median_path = np.median(portfolio_value_over_time, axis=1)
-    return median_path
+    volatility, expected_shortfall = compute_risk_metrics(portfolio_value_over_time, 5)
+    return median_path, volatility, expected_shortfall
 
 
     
