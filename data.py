@@ -69,6 +69,7 @@ def get_gbm_calibration(start = "2000-01-01"):
 
 
 
+'''
 
 px, log_rets, mu, sigma, cov = get_gbm_calibration()
 
@@ -80,3 +81,4 @@ print("\nAnnual Volatility")
 print(sigma)
 print("\nAnnual Covariance Matrix")
 print(cov)
+'''
